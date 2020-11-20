@@ -48,12 +48,15 @@ private:
                 else new_grid[x][y] = false;
 
                 int i = point_indicies[x][y];
-                if (!new_grid[x][y])
-                    vertex_array->operator[](i).color = sf::Color::Black;
-                else if (ns == 3)
-                    vertex_array->operator[](i).color = sf::Color::Blue;
-                else 
-                    vertex_array->operator[](i).color = sf::Color::Red;
+                for (int j=i; j<i+3; ++j)
+                {
+                    if (!new_grid[x][y])
+                        vertex_array->operator[](j).color = sf::Color::Black;
+                    else if (ns == 3)
+                        vertex_array->operator[](j).color = sf::Color::Blue;
+                    else 
+                    vertex_array->operator[](j).color = sf::Color::Red;
+                }
             }
     }
 
@@ -101,14 +104,19 @@ public:
             }
 
         // Set vertex array positions
-        vertex_array = new sf::VertexArray(sf::PrimitiveType::Points, x_size*y_size);
-        int i = -1;
+        vertex_array = new sf::VertexArray(sf::PrimitiveType::Triangles, 3*x_size*y_size);
+        int i = 0;
         for (int x=0; x<x_size; ++x)
             for (int y=0; y<y_size; ++y)
             {
-                point_indicies[x][y] = ++i;
-                vertex_array->operator[](i).position = sf::Vector2f((x+0.5f)*square_size, (y+0.5f)*square_size);
-                vertex_array->operator[](i).color = sf::Color::Black;
+                point_indicies[x][y] = i;
+                vertex_array->operator[](i+0).position = sf::Vector2f(x*square_size, y*square_size);
+                vertex_array->operator[](i+1).position = sf::Vector2f((x+1)*square_size, y*square_size);
+                vertex_array->operator[](i+2).position = sf::Vector2f((x+1)*square_size, (y+1)*square_size);
+                vertex_array->operator[](i+0).color = sf::Color::Black;
+                vertex_array->operator[](i+1).color = sf::Color::Black;
+                vertex_array->operator[](i+2).color = sf::Color::Black;
+                i += 3;
             }
     }
 
@@ -124,6 +132,7 @@ public:
         delete[] grid;
         delete[] new_grid;
         delete[] point_indicies;
+        delete vertex_array;
     }
 
     /// Run one iteration of the game of life.
