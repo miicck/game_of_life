@@ -17,6 +17,7 @@ private:
     int** point_indicies; ///<The indicies of the squares in the vertex array
     int x_size; ///<The x size of the board
     int y_size; ///<The y size of the board
+    int square_size; ///<The size of a square in the board
     sf::VertexArray* vertex_array; ///<Vertex array used to draw the squares
 
     /// Returns the number of alive neighbours of the square at \p x \p y.
@@ -68,10 +69,11 @@ private:
 public:
     
     /// Creates a game of life board of size \p x_size by \p y_size
-    board(int x_size, int y_size)
+    board(int x_size, int y_size, int square_size=1)
     {
         this->x_size = x_size;
         this->y_size = y_size;
+        this->square_size = square_size;
 
         // Initialize arrays
         grid = new bool*[x_size];
@@ -105,7 +107,7 @@ public:
             for (int y=0; y<y_size; ++y)
             {
                 point_indicies[x][y] = ++i;
-                vertex_array->operator[](i).position = sf::Vector2f(x+0.5f, y+0.5f);
+                vertex_array->operator[](i).position = sf::Vector2f((x+0.5f)*square_size, (y+0.5f)*square_size);
                 vertex_array->operator[](i).color = sf::Color::Black;
             }
     }
@@ -166,6 +168,20 @@ public:
 /// Program entrypoint.
 int main(int argc, char** argv)
 {
+    int square_size = 1;
+    for (int i=1; i<argc; ++i)
+    {
+        try
+        {
+            square_size = std::stoi(argv[i]);
+        }
+        catch (const std::exception& e)
+        {
+            std::cout << "Could not parse square size from \"" << argv[i] << "\"!\n";
+        }
+    }
+
+
     // Seed the random number generator
     srand(clock());
 
@@ -178,7 +194,9 @@ int main(int argc, char** argv)
     window.setVerticalSyncEnabled(false);
 
     // Create a board to fill the window
-    board b(window.getSize().x, window.getSize().y);
+    int xsize = window.getSize().x/square_size;
+    int ysize = window.getSize().y/square_size;
+    board b(xsize, ysize, square_size);
 
     // Main loop
     while (window.isOpen())
