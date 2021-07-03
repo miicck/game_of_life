@@ -20,14 +20,21 @@ private:
     int square_size; ///<The size of a square in the board
     sf::VertexArray* vertex_array; ///<Vertex array used to draw the squares
 
+    /// Returns the periodic image of x in [0, size)
+    int periodic(int x, int size)
+    {
+        int ret = x % size;
+        return ret < 0 ? ret + size : ret;
+    }
+
     /// Returns the number of alive neighbours of the square at \p x \p y.
-    /// Assumes 0 < x < x_size-1 and 0 < y < y_size-1.
+    /// If at the edge, will apply periodic boundary conditions.
     int neighbours(int x, int y)
     {
         int ret = -grid[x][y];
         for (int dx=-1; dx<2; ++dx)
             for (int dy=-1; dy<2; ++dy)
-                if (grid[x+dx][y+dy])
+                if (grid[periodic(x+dx, x_size)][periodic(y+dy, y_size)])
                     ret += 1;
         return ret;
     }
@@ -36,10 +43,12 @@ private:
     /// the game of life rules to board::grid.
     void update_new_grid(int xmin, int xmax)
     {
-        if (xmin < 1) xmin = 1;
-        if (xmax > x_size - 1) xmax = x_size - 1;
+        // Clamp xmin/xmax to board range
+        if (xmin < 0) xmin = 0;
+        if (xmax > x_size) xmax = x_size;
+
         for (int x=xmin; x<xmax; ++x)
-            for (int y=1; y<y_size-1; ++y)
+            for (int y=0; y<y_size; ++y)
             {
                 int ns = neighbours(x, y);
                 if (ns < 2) new_grid[x][y] = false;
@@ -151,6 +160,8 @@ public:
 
         for(unsigned i=0; i<CPU_COUNT; ++i)
             threads[i].join();
+
+        new_grid[rand()%x_size][rand()%y_size] = true;
             
         // Copy new grid to active grid
         for (unsigned i=0; i<CPU_COUNT; ++i)
