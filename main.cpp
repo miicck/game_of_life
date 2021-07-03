@@ -188,6 +188,7 @@ public:
 /// Program entrypoint.
 int main(int argc, char** argv)
 {
+    std::cout << "Running on " << CPU_COUNT << " cores.\n";
     int square_size = 1;
     for (int i=1; i<argc; ++i)
     {
